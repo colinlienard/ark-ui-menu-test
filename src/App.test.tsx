@@ -1,14 +1,22 @@
-import { render, screen } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
-import App from './App'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import App from "./App";
 
-it('should open', async () => {
-  const user = userEvent.setup()
+it("should open", async () => {
+  const onSelect = vi.fn();
 
-  render(<App />)
+  render(<App onSelect={onSelect} />);
 
-  expect(screen.getByText('Open menu').getAttribute('data-state')).toMatchInlineSnapshot(`"closed"`)
+  expect(screen.getByText("Open menu")).toHaveAttribute("data-state", "closed");
 
-  await user.click(screen.getByText('Open menu'))
-  expect(screen.getByText('Open menu').getAttribute('data-state')).toMatchInlineSnapshot(`"open"`)
-})
+  // Works
+  fireEvent.click(screen.getByText("Open menu"));
+  await waitFor(() => {
+    expect(screen.getByText("Open menu")).toHaveAttribute("data-state", "open");
+  });
+
+  // Fails
+  fireEvent.click(screen.getByText("React"));
+  await waitFor(() => {
+    expect(onSelect).toHaveBeenCalled();
+  });
+});
